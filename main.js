@@ -1,76 +1,141 @@
-// These variable hold the numbers we want to do operations on and the name of the operation we want to perform.
-// They are expected to change so we use the "let" keyword.
-let firstNum = null
-let secondNum = null
-let operation = null
+/* -Displays numbers
+   -put class at top */
+class Calculator {
+  constructor(previousOperandTextElement, currentOperandTextElement) {
+    this.previousOperandTextElement = previousOperandTextElement
+    this.currentOperandTextElement = currentOperandTextElement
+    this.clear()
+  }
+   /* functions */
 
-// this function takes in the number you type in the input field and saves it to the "firstNum" variable
-const saveFirstNumber = (num) => {
-  firstNum = parseInt(num)  
-}
+   /* clears variables */
+  clear() {
+    this.currentOperand = ''
+    this.previousOperand = ''
+    this.operation = undefined
+  }
+    /* removes single number */
+  delete() {
+    this.currentOperand = this.currentOperand.toString().slice(0, -1)
+  }
+    /*adds number to screen 
+       passes number to chooseOperation*/
+  appendNumber(number) {
+    if (number === '.' && this.currentOperand.includes('.')) return /*this stops the user from having multiple '.' */
+    this.currentOperand = this.currentOperand.toString() + number.toString() /*if not string js tries to add as numbers*/
+    
+  }
+    /* takes operation user selects */ 
+  chooseOperation(operation) {
+    if (this.currentOperand === '') return /*if currentOperand is empty then do not execute further code */
+    if (this.currentOperand !== '') {
+      this.compute()
+    }
+    this.operation = operation
+    this.previousOperand = this.currentOperand
+    this.currentOperand = ''
+  }
+    /* takes value for what to display*/
+  compute() {
+    let computation /*result of function */
+    const prev = parseFloat(this.previousOperand) /*conv string to number*/
+    const current = parseFloat(this.currentOperand)
+    if (isNaN(prev) || isNaN(current)) return /* if NaN then return*/
+    switch (this.operation) {
+      case '+':
+        computation = prev + current
+        break
+        case '-':
+        computation = prev - current
+        break
+        case '*':
+        computation = prev * current
+        break
+        case '÷':
+        computation = prev / current
+        break
+        default: 
+        return
+    }
+    this.currentOperand = computation
+    this.operation = undefined
+    this.previousOperand = ''
+  }
 
-// this function takes in the number you type in the 2nd input field and saves it to the "secondNum" variable
-const saveSecondNumber = (num) => {
-  // "parseInt" is a built in function in JS that converts a string/word into a number
-  secondNum = parseInt(num)
-}
+  getDisplayNumber(number) {
+    const stringNumber = number.toString()
+    const integerDigits = parseFloat(stringNumber.split('.')[0])
+    const decimalDigits = stringNumber.split('.')[1]
+    let integerDisplay
+    if (isNaN(integerDigits)) {
+      integerDisplay = ''
+    } else {
+      integerDisplay = integerDigits.toLocaleString('en', {
+        maximumFractionDigits: 0})
+    }
+    if (decimalDigits != null) {
+      return `${integerDisplay}.${decimalDigits}`
+    } else{
+      return integerDisplay
+    }
+  }
 
-// this function takes in two argument/numbers and returns the sum of them
-const add = (numA, numB) => {
-  const sum = numA + numB
-  return sum
-}
 
-// this function takes in two argument/numbers and returns the difference of them
-const subtract = (numA, numB) => {
-  const difference = numA - numB
-  return difference
-}
 
-// These variables are already defined but that don't point to functions. It's up to you to build the functions to complete your calculator use:
-
-const multiply = (numA, numB) => {
-  // * to get a product then return it
-  // Open up the inspector tool in Chrome and select the Console tab to see what this functions is "logging out" to the console.
-  console.log(numA, numB)
-}
-
-const divide = null
-// / to get a quotient,
-
-const modulus = null
-// and % to get a remainder.
-
-// This function changes the "operation" variable to be equal to the "id" of the button we choose on the web page.
-const changeOperation = (chosenOperation) => {
-  operation = chosenOperation
-  // Use your Chrome Inspector Tool > Console Tab to see the "operation" that's logged
-  console.log(operation)
-}
-
-// In order to show the user their results we have to access the DOM and stick in the value
-const putResultInElement = (operationResults) => {
-  // access the DOM by writing "document" then use the method "getElementById" and pass it the id, "result".
-  document.getElementById("result").innerHTML = "Results: " + operationResults
-
-  // Remember, each element has built in properties like "innerHTML" which we can change to anything we like. 
-  // Here we give it a string: "Results: " and add the value of the operation to it.
-}
-
-// The function uses the value of "operation" variable to determine which operation function it should use on the number: add, subtract, multiply, divide, or modulus
-const equals = () => {
-  switch (operation) {
-    case "addition":  putResultInElement(add(firstNum, secondNum)) 
-    break;
-    case "subtraction": putResultInElement(subtract(firstNum, secondNum)) 
-    break;
-    case "multiplication": multiply(firstNum, secondNum) 
-    break;
-    case "division": console.log(divide(firstNum, secondNum)) 
-    break;
-    case "modulus": console.log(modulus(firstNum, secondNum)) 
-    break;
-    default: "Choose an operation"
+    /*updates value inside output */
+  updateDisplay() {
+    this.currentOperandTextElement.innerText = 
+    this.getDisplayNumber(this.currentOperand)
+    if (this.operation != null) {
+      this.previousOperandTextElement.innerText = 
+      `${this.getDisplayNumber(this.previousOperand)} ${this.operation}`
+    } else {
+      this.previousOperandTextElement.innerText = ''
+    }
+    
   }
 }
 
+
+
+const numberButtons = document.querySelectorAll('[data-number]')
+const operationButtons = document.querySelectorAll('[data-operation]')
+const equalsButton = document.querySelector('[data-equals]')
+const deleteButton = document.querySelector('[data-delete]')
+const allClearButton = document.querySelector('[data-all-clear]')
+const previousOperandTextElement = document.querySelector('[data-previous-operand]')
+const currentOperandTextElement = document.querySelector('[data-current-operand]')
+
+/*create calculator, define class by new '...', pass constructor so we can use this calc         */
+const calculator = new Calculator(previousOperandTextElement, currentOperandTextElement)
+
+numberButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    calculator.appendNumber(button.innerText)
+    calculator.updateDisplay()
+    
+  })
+})
+
+operationButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    calculator.chooseOperation(button.innerText)
+    calculator.updateDisplay()
+    
+  })
+})
+
+equalsButton.addEventListener('click', button => {
+  calculator.compute()
+  calculator.updateDisplay()
+})
+
+allClearButton.addEventListener('click', button => {
+  calculator.clear()
+  calculator.updateDisplay()
+})
+
+deleteButton.addEventListener('click', button => {
+  calculator.clear()
+  calculator.updateDisplay()
+})
